@@ -45,6 +45,32 @@ Ainsi, lorsqu'une requête POST est envoyée, c'est l'implémentation par défau
 
 
 
+# Situation 2 :  Une servlet dans une servlet
+
+# Q2.1 - Tableau comparatif
+
+|                                         include                                  forward                  sendRedirect 
+| Qui envoie la requête suivante ?       | le serveur (la servlet appelante, en interne) | le serveur (en interne) | le navigateur, après la réponse 302 |
+| Combien d'allers-retours HTTP ?        | 1                                    | 1                        | 2 |
+| L'URL du navigateur change-t-elle ?     | non                                       | non                         | oui |
+| Les attributs de requête sont-ils conservés ? | oui                                 | oui                         | non (nouvelle requête) |
+| Qui fixe le statut et les en-têtes ? | la servlet appelante seulement ; ceux de la servlet incluse sont ignorés | la servlet cible (B) | la servlet qui redirige : 302 + Location |
+| Que devient ce qui était déjà écrit ? | conservé : B écrit à la suite | effacé (le tampon est vidé) ; si la réponse est déjà validée, IllegalStateException | perdu : le navigateur ne lit pas le corps d'un 302 |
+
+# Q2.2 - Pourquoi setContentType dans Page.debut et pas dans EnteteServlet ?
+
+Pendant un include, la servlet incluse ne peut pas modifier le statut ni les en-têtes : ils sont ignorés (voir E6). Le Content-Type posé dans EnteteServlet
+n'aurait donc aucun effet. Il doit être fixé par la servlet qui construit la page, avant le premier getWriter(), avec charset=UTF-8 pour que les accents soient corrects. Le placer dans Page.debut le fait une seule fois pour toutes les pages.
+
+# Q2.3 - getServletPath() pendant un include
+
+getServletPath() donne le chemin de la page (par exemple /modules), pas celui du fragment : pendant un include, la requête vue par le fragment reste la requête d'origine. Le chemin du fragment est dans l'attribut jakarta.servlet.include.servlet_path, et l'URI du fragment dans jakarta.servlet.include.request_uri (voir E4). Une servlet incluse qui veut savoir « qui elle est » doit donc lire ces attributs et non les méthodes de la requête.
+
+### Q2.4 - Une servlet fait un forward vers sa propre URL
+
+Prévision : chaque forward rappelle la même servlet, qui refait un forward, et ainsi de suite. Comme rien ne l'arrête, les appels s'empilent jusqu'à un StackOverflowError,  et le navigateur reçoit une erreur 500. Vérification : (à compléter avec ce que vous observez dans le navigateur et la console)
+
+
 
 
 
