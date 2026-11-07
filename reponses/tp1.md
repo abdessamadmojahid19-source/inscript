@@ -66,7 +66,7 @@ n'aurait donc aucun effet. Il doit être fixé par la servlet qui construit la p
 
 getServletPath() donne le chemin de la page (par exemple /modules), pas celui du fragment : pendant un include, la requête vue par le fragment reste la requête d'origine. Le chemin du fragment est dans l'attribut jakarta.servlet.include.servlet_path, et l'URI du fragment dans jakarta.servlet.include.request_uri (voir E4). Une servlet incluse qui veut savoir « qui elle est » doit donc lire ces attributs et non les méthodes de la requête.
 
-### Q2.4 - Une servlet fait un forward vers sa propre URL
+# Q2.4 - Une servlet fait un forward vers sa propre URL
 
 Prévision : chaque forward rappelle la même servlet, qui refait un forward, et ainsi de suite. Comme rien ne l'arrête, les appels s'empilent jusqu'à un StackOverflowError,  et le navigateur reçoit une erreur 500. Vérification : (à compléter avec ce que vous observez dans le navigateur et la console)
 
